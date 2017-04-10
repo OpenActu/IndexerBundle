@@ -23,3 +23,5 @@ List and BTree integration for custom indexation on variables PHP
     $indexer->detach($index->getValue()); # remove the index value from the indexer
   }
 ```
+
+To see more use cases, read directly the file /Tests/RoadmapTest.php

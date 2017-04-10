@@ -3,6 +3,7 @@ namespace OpenActu\IndexerBundle\Tests;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use OpenActu\IndexerBundle\Model\Indexer\BTreeIndexer;
 use OpenActu\IndexerBundle\Model\Indexer\ListIndexer;
+use OpenActu\IndexerBundle\Model\Indexer\HydratorIndexer;
 use OpenActu\IndexerBundle\Model\Type\StringType;
 use OpenActu\IndexerBundle\Model\Type\NumericType;
 use OpenActu\IndexerBundle\Model\Type\DatetimeType;
@@ -47,6 +48,15 @@ class RoadmapTest extends KernelTestCase
         }
 
         /**
+         * build a db response to store it
+         */
+        $string = $indexer->convertToDatabaseValue();
+        $rindexer = HydratorIndexer::hydrate($string);
+
+        unset($indexer);
+        $indexer = $rindexer;
+
+        /**
          * try to inject false index
          */
         $testNoIndex = true;
@@ -71,8 +81,9 @@ class RoadmapTest extends KernelTestCase
 
         $testIndexExist = true;
 
-        foreach($indexes as $index)
+        foreach($indexes as $index){
             $testIndexExist = $testIndexExist && $indexer->exists($index);
+        }
         $this->assertEquals($testIndexExist, true);
 
         /**

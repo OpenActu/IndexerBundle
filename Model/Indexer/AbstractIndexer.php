@@ -14,11 +14,48 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
     private $card = 0;
     private $data;
 
+    public function forceCard($card)
+    {
+        $this->card=$card;
+    }
+    public function forceContext($context)
+    {
+        $this->context=$context;
+    }
+    public function forceIndex($index,$type,$data)
+    {
+        $this->index    = new $type($index);
+        $this->data     = $data;
+    }
+
+    public function convertToDatabaseValue()
+    {
+        $output = array(
+            'card' => $this->card(),
+            'context' => $this->getContext(),
+            'classname' => get_class($this),
+            'classnameType' => $this->getClassname(),
+            'index' => null,
+            'data' => null,
+        );
+        if(!$this->isNillable()){
+            $output['index'] = $this->getIndex()->convertToDatabaseValue();
+            $output['data']  = $this->getData();
+        }
+        return $output;
+    }
+
     public function increaseCard()
     {
         $this->card++;
     }
 
+    public function set($attribute, $data)
+    {
+        if(property_exists($this, $attribute)){
+            $this->$attribute = $data;
+        }
+    }
     public function checkIndex($value)
     {
         $classname      = $this->classname;
@@ -31,6 +68,11 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
         $this->data     = null;
         $this->card     = 0;
         $this->context  = self::CONTEXT_INIT;
+    }
+
+    public function getContext()
+    {
+        return $this->context;
     }
 
     public function decreaseCard()

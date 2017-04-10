@@ -6,12 +6,12 @@ class BTreeIndexer extends AbstractIndexer
     /**
      * @var l1 left child node
      */
-    private $l1 = null;
+    protected $l1 = null;
 
     /**
      * @var l2 right child node
      */
-    private $l2 = null;
+    protected $l2 = null;
 
     /**
      * data attachment
@@ -202,4 +202,23 @@ class BTreeIndexer extends AbstractIndexer
 
     }
 
+    /**
+     * convert current instance to database value
+     *
+     * @return string
+     */
+    public function convertToDatabaseValue($depth=1)
+    {
+        $output = parent::convertToDatabaseValue();
+
+        $output['l1'] = null;
+        $output['l2'] = null;
+
+        if(!$this->isNillable()){
+            $output['l1']    = $this->l1->convertToDatabaseValue($depth+1);
+            $output['l2']    = $this->l2->convertToDatabaseValue($depth+1);
+        }
+
+        return (1 === $depth) ? json_encode($output) : $output;
+    }
 }

@@ -61,4 +61,11 @@ interface AbstractIndexerInterface
     public function score();
     public function __toString();
     public function get($pos=0,&$index=null);
+
+    /**
+     * convert current instance to database value
+     *
+     * @return string
+     */
+    public function convertToDatabaseValue();
 }

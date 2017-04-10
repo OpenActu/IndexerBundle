@@ -10,7 +10,9 @@ class DatetimeType extends AbstractType implements AbstractTypeInterface
     }
     public function eq($value)
     {
-        return ($this->getValue() === $value);
+
+        $result = ($this->getValue() == $value);
+        return $result;
     }
     public function __toString()
     {
@@ -25,6 +27,11 @@ class DatetimeType extends AbstractType implements AbstractTypeInterface
                 array('provenance' => 'scalar','type' => 'datetime')
             );
         }
+        elseif(get_class($value) === 'stdClass'){
+            $time       = $value->date;
+            $timezone   = new \DateTimeZone($value->timezone);
+            $value      = new \DateTime($time,$timezone);
+        }
         elseif(get_class($value) !== 'DateTime'){
             throw new IndexerException(
                 IndexerException::INVALID_ORIGIN_DATA_ERRMSG,
@@ -32,7 +39,6 @@ class DatetimeType extends AbstractType implements AbstractTypeInterface
                 array('provenance' => 'object('.get_class($value).')','type' => 'datetime')
             );
         }
-
         if(is_array($value)){
             throw new IndexerException(
                 IndexerException::INVALID_ORIGIN_DATA_ERRMSG,
@@ -43,4 +49,5 @@ class DatetimeType extends AbstractType implements AbstractTypeInterface
 
         return $value;
     }
+
 }

@@ -24,9 +24,16 @@ interface AbstractTypeInterface
     /**
      * cast the value properly
      *
-     * throw error if value can't be Indexed 
+     * throw error if value can't be Indexed
      * @param mixed $value
      * @return mixed Formatted Index
      */
     public static function cast($value);
+
+    /**
+     * convert current instance to database value
+     *
+     * @return string
+     */
+    public function convertToDatabaseValue();
 }

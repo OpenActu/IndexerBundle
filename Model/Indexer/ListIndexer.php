@@ -6,7 +6,7 @@ class ListIndexer extends AbstractIndexer
     /**
      * @var l next node
      */
-    private $l = null;
+    protected $l = null;
 
     /**
      * data attachment
@@ -160,5 +160,23 @@ class ListIndexer extends AbstractIndexer
     public function optimize()
     {
         return clone $this;
+    }
+
+    /**
+     * convert current instance to database value
+     *
+     * @return string
+     */
+    public function convertToDatabaseValue($depth=1)
+    {
+        $output = parent::convertToDatabaseValue();
+
+        $output['l'] = null;
+
+        if(!$this->isNillable()){
+            $output['l']    = $this->l->convertToDatabaseValue($depth+1);
+        }
+
+        return (1 === $depth) ? json_encode($output) : $output;
     }
 }

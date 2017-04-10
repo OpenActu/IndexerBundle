@@ -1,8 +1,18 @@
 <?php
 namespace OpenActu\IndexerBundle\Model\Indexer;
 
-class BTree extends AbstractIndexer
+class BTreeIndexer extends AbstractIndexer
 {
+    /**
+     * @var l1 left child node
+     */
+    private $l1 = null;
+
+    /**
+     * @var l2 right child node
+     */
+    private $l2 = null;
+
     /**
      * data attachment
      *
@@ -70,8 +80,8 @@ class BTree extends AbstractIndexer
       parent::checkNotNillable($index,$data);
 
       $classname     = $this->getClassname();
-      $this->l1      = new BTree($classname);
-      $this->l2      = new BTree($classname);
+      $this->l1      = new BTreeIndexer($classname);
+      $this->l2      = new BTreeIndexer($classname);
     }
 
     /**
@@ -154,15 +164,15 @@ class BTree extends AbstractIndexer
     }
 
     /**
-     * Build a new optimized BTree
+     * Build a new optimized BTreeIndexer
      *
-     * @return BTree
+     * @return BTreeIndexer
      */
     public function optimize()
     {
         $dichotomies  = $this->__extract_dichotomies();
         $classname     = $this->getClassname();
-        $new_item     = new BTree($classname);
+        $new_item     = new BTreeIndexer($classname);
         foreach($dichotomies as $depth){
           foreach($depth as $pos){
               $data = $this->get((int)$pos,$index);

@@ -38,9 +38,20 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
         $this->card--;
     }
 
+    public function setData($data)
+    {
+        $this->data     = $data;
+    }
+
     public function getData()
     {
         return $this->data;
+    }
+
+    public function setIndex($index)
+    {
+        $classname = $this->classname;
+        $this->index = new $classname($index);
     }
 
     public function getIndex()

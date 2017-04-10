@@ -1,7 +1,8 @@
 <?php
 namespace OpenActu\IndexerBundle\Tests;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use OpenActu\IndexerBundle\Model\Indexer\BTree;
+use OpenActu\IndexerBundle\Model\Indexer\BTreeIndexer;
+use OpenActu\IndexerBundle\Model\Indexer\ListIndexer;
 use OpenActu\IndexerBundle\Model\Type\StringType;
 use OpenActu\IndexerBundle\Model\Type\NumericType;
 use OpenActu\IndexerBundle\Model\Type\DatetimeType;
@@ -32,11 +33,14 @@ class RoadmapTest extends KernelTestCase
         $this->validateBTreeStringType();
         $this->validateBTreeNumericType();
         $this->validateBTreeDatetimeType();
+        $this->validateListStringType();
+        $this->validateListNumericType();
+        $this->validateListDatetimeType();
     }
 
-    public function validateBTree($classname, $indexes, $noindexes)
+    public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)
     {
-        $indexer = new BTree($classname);
+        $indexer = new $type($classname);
         foreach($indexes as $index){
             $value = rand(0,1000);
             $indexer->attach($index,$value);
@@ -97,6 +101,28 @@ class RoadmapTest extends KernelTestCase
         $this->assertEquals($indexer->card(), 0);
     }
 
+    public function validateListStringType()
+    {
+        $noindexes = array(
+            array(true)
+        );
+
+        $indexes = array(
+            "sods",
+            "fqofao",
+            "atajso",
+            "4633Ses",
+            "QTEeqo",
+            "4334SQ",
+            "pqohq",
+            "436DQ",
+            12,
+            "ies",
+        );
+
+        $this->validateIndexer(StringType::class, $indexes, $noindexes, ListIndexer::class);
+    }
+
     public function validateBTreeStringType()
     {
         $noindexes = array(
@@ -116,7 +142,7 @@ class RoadmapTest extends KernelTestCase
             "ies",
         );
 
-        $this->validateBTree(StringType::class, $indexes, $noindexes);
+        $this->validateIndexer(StringType::class, $indexes, $noindexes);
     }
 
     public function validateBTreeDatetimeType()
@@ -133,7 +159,47 @@ class RoadmapTest extends KernelTestCase
             new \DateTime("2016-06-01 00:00:00"),
         );
 
-        $this->validateBTree(DatetimeType::class, $indexes, $noindexes);
+        $this->validateIndexer(DatetimeType::class, $indexes, $noindexes);
+    }
+
+    public function validateListDatetimeType()
+    {
+        $noindexes = array(
+            "x",
+            1,
+            array()
+        );
+
+        $indexes = array(
+            new \DateTime("2015-01-01 00:00:00"),
+            new \DateTime("2015-06-01 00:00:00"),
+            new \DateTime("2016-06-01 00:00:00"),
+        );
+
+        $this->validateIndexer(DatetimeType::class, $indexes, $noindexes, ListIndexer::class);
+    }
+
+
+    public function validateListNumericType()
+    {
+        $noindexes = array(
+            1.2,
+            -1,
+            "a",
+            array(),
+        );
+
+        $indexes = array(
+            1,
+            3,
+            4,
+            5,
+            6,
+            5,
+
+        );
+        $this->validateIndexer(NumericType::class, $indexes, $noindexes,ListIndexer::class);
+
     }
 
     public function validateBTreeNumericType()
@@ -154,7 +220,7 @@ class RoadmapTest extends KernelTestCase
             5,
 
         );
-        $this->validateBTree(NumericType::class, $indexes, $noindexes);
+        $this->validateIndexer(NumericType::class, $indexes, $noindexes);
 
     }
 }

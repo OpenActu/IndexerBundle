@@ -6,12 +6,38 @@ use OpenActu\IndexerBundle\Exception\IndexerException;
 abstract class AbstractIndexer implements AbstractIndexerInterface
 {
     /**
-     * @var $type type
+     * @var $classnameIndex
      */
-    private $classname;
-    private $index;
+    private $classnameIndex;
+
+    /**
+     * @var $objectIndex
+     */
+    private $objectIndex;
+
+    /**
+     * @var $classnameData
+     */
+    private $classnameData;
+
+    /**
+     * @var $objectData
+     */
+    private $objectData;
+
+    /**
+     * @var $context
+     */
     private $context = self::CONTEXT_INIT;
+
+    /**
+     * @var $card
+     */
     private $card = 0;
+
+    /**
+     * @var $data (to delete)
+     */
     private $data;
 
     public function forceCard($card)
@@ -22,26 +48,40 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
     {
         $this->context=$context;
     }
-    public function forceIndex($index,$type,$data)
+    public function forceIndex($index)
     {
+        $type = $this->classnameIndex;
         $vindex = $type::strtotype($index);
-        $this->index    = new $type($vindex);
-        $this->data     = $data;
+        $this->objectIndex    = new $type($vindex);
+    }
+    public function forceData($data)
+    {
+        $type = $this->classnameData;
+        $vindex = $type::strtotype($data);
+        $this->objectData    = new $type($vindex);
     }
 
     public function convertToDatabaseValue()
     {
         $output = array(
-            'n' => $this->card(),
-            't' => $this->getContext(),
+            // length
+            'n' => $this->card,
+            // context (init or instanciated)
+            't' => $this->context,
+            // current class
             'c' => get_class($this),
-            'p' => $this->getClassname(),
+            // current class type
+            'p' => $this->classnameIndex,
+            // index
             'i' => null,
+            // data
             'd' => null,
+            // classname data
+            'e' => $this->classnameData,
         );
         if(!$this->isNillable()){
             $output['i'] = $this->getIndex()->convertToDatabaseValue();
-            $output['d']  = $this->getData();
+            $output['d'] = $this->getData()->convertToDatabaseValue();
         }
         return $output;
     }
@@ -59,16 +99,16 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
     }
     public function checkIndex($value)
     {
-        $classname      = $this->classname;
+        $classname      = $this->classnameIndex;
         return $classname::cast($value);
     }
 
     public function clear()
     {
-        $this->index    = null;
-        $this->data     = null;
-        $this->card     = 0;
-        $this->context  = self::CONTEXT_INIT;
+        $this->objectIndex  = null;
+        $this->objectData   = null;
+        $this->card         = 0;
+        $this->context      = self::CONTEXT_INIT;
     }
 
     public function getContext()
@@ -83,30 +123,35 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
 
     public function setData($data)
     {
-        $this->data     = $data;
+        $classnameData = $this->classnameData;
+        $this->objectData = new $classnameData($data);
     }
 
     public function getData()
     {
-        return $this->data;
+        return $this->objectData;
     }
 
     public function setIndex($index)
     {
-        $classname = $this->classname;
-        $this->index = new $classname($index);
+        $classnameIndex = $this->classnameIndex;
+        $this->objectIndex = new $classnameIndex($index);
     }
 
     public function getIndex()
     {
-        return $this->index;
+        return $this->objectIndex;
     }
 
-    public function getClassname()
+    public function getClassnameIndex()
     {
-        return $this->classname;
+        return $this->classnameIndex;
     }
 
+    public function getClassnameData()
+    {
+        return $this->classnameData;
+    }
     /**
      * execute data writing
      *
@@ -115,33 +160,37 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      */
     public function checkNotNillable($index,$data)
     {
-      $classname     = $this->classname;
+      $classnameIndex= $this->classnameIndex;
+      $classnameData = $this->classnameData;
       $this->context = self::CONTEXT_INSTANCIATE;
-      $this->index   = new $classname($index);
-      $this->data    = $data;
+      $this->objectIndex   = new $classnameIndex($index);
+      $this->objectData    = new $classnameData($data);
     }
 
-    public function __construct($classname)
+    public function __construct($classnameIndex, $classnameData)
     {
-        $interfaces = @class_implements($classname);
-        $isValidType= false;
-        if($interfaces)
-        {
-            foreach($interfaces as $interface)
+        $array = array($classnameIndex,$classnameData);
+        foreach($array as $classname){
+            $interfaces = @class_implements($classname);
+            $isValidType= false;
+            if($interfaces)
             {
-                if($interface === AbstractTypeInterface::class)
-                    $isValidType = true;
+                foreach($interfaces as $interface)
+                {
+                    if($interface === AbstractTypeInterface::class)
+                        $isValidType = true;
+                }
             }
+
+            if(!$isValidType)
+                throw new IndexerException(
+                    IndexerException::INVALID_TYPE_FOUND_ERRMSG,
+                    IndexerException::INVALID_TYPE_FOUND_ERRNO,
+                    array('type' => $classname)
+                );
         }
-
-        if(!$isValidType)
-            throw new IndexerException(
-                IndexerException::INVALID_TYPE_FOUND_ERRMSG,
-                IndexerException::INVALID_TYPE_FOUND_ERRNO,
-                array('type' => $classname)
-            );
-
-        $this->classname = $classname;
+        $this->classnameIndex = $classnameIndex;
+        $this->classnameData  = $classnameData;
     }
 
     /**
@@ -161,7 +210,7 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      */
     public function isLessOrEqualsThan($index)
     {
-        return !$this->index->gt($index);
+        return !$this->objectIndex->gt($index);
     }
 
     /**
@@ -172,7 +221,7 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      */
     public function isGreaterThan($index)
     {
-        return $this->index->gt($index);
+        return $this->objectIndex->gt($index);
     }
 
     /**
@@ -183,7 +232,7 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      */
     public function isEquals($index)
     {
-        return $this->index->eq($index);
+        return $this->objectIndex->eq($index);
     }
 
     /**
@@ -194,7 +243,7 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      */
     public function isGreaterOrEqualsThan($index)
     {
-        return ($this->index->gt($index) || $this->index->eq($index));
+        return ($this->objectIndex->gt($index) || $this->objectIndex->eq($index));
     }
 
     public function card()

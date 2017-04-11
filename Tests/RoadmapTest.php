@@ -41,7 +41,7 @@ class RoadmapTest extends KernelTestCase
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)
     {
-        $indexer = new $type($classname);
+        $indexer = new $type($classname, NumericType::class);
         foreach($indexes as $index){
             $value = rand(0,1000);
             $indexer->attach($index,$value);

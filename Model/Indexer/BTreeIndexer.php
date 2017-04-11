@@ -55,7 +55,7 @@ class BTreeIndexer extends AbstractIndexer
                 for($i=0;$i<$node->card();$i++){
                     $tdata = $node->get($i,$tvalue);
                     if( $tvalue->getValue() !== $node->getIndex()->getValue() )
-                        $this->attach($tvalue->getValue(),$tdata);
+                        $this->attach($tvalue->getValue(),$tdata->getValue());
             }
 
 
@@ -81,9 +81,10 @@ class BTreeIndexer extends AbstractIndexer
     {
       parent::checkNotNillable($index,$data);
 
-      $classname     = $this->getClassname();
-      $this->l1      = new BTreeIndexer($classname);
-      $this->l2      = new BTreeIndexer($classname);
+      $classnameIndex= $this->getClassnameIndex();
+      $classnameData = $this->getClassnameData();
+      $this->l1      = new BTreeIndexer($classnameIndex, $classnameData);
+      $this->l2      = new BTreeIndexer($classnameIndex, $classnameData);
     }
 
     /**
@@ -195,13 +196,14 @@ class BTreeIndexer extends AbstractIndexer
      */
     public function optimize()
     {
-        $dichotomies  = $this->__extract_dichotomies();
-        $classname     = $this->getClassname();
-        $new_item     = new BTreeIndexer($classname);
+        $dichotomies    = $this->__extract_dichotomies();
+        $classnameIndex = $this->getClassnameIndex();
+        $classnameData  = $this->getClassnameData();
+        $new_item     = new BTreeIndexer($classnameIndex, $classnameData);
         foreach($dichotomies as $depth){
           foreach($depth as $pos){
               $data = $this->get((int)$pos,$index);
-              $new_item->attach($index->getValue(),$data);
+              $new_item->attach($index->getValue(),$data->getValue());
           }
         }
         return $new_item;
@@ -230,9 +232,10 @@ class BTreeIndexer extends AbstractIndexer
     /**
      * convert current instance to database value
      *
+     * @param bool $main
      * @return string
      */
-    public function convertToDatabaseValue($depth=1)
+    public function convertToDatabaseValue($master=true)
     {
         $output = parent::convertToDatabaseValue();
 
@@ -240,10 +243,10 @@ class BTreeIndexer extends AbstractIndexer
         $output['l2'] = null;
 
         if(!$this->isNillable()){
-            $output['l1']    = $this->l1->convertToDatabaseValue($depth+1);
-            $output['l2']    = $this->l2->convertToDatabaseValue($depth+1);
+            $output['l1']    = $this->l1->convertToDatabaseValue(false);
+            $output['l2']    = $this->l2->convertToDatabaseValue(false);
         }
 
-        return (1 === $depth) ? json_encode($output) : $output;
+        return (true === $master) ? json_encode($output) : $output;
     }
 }

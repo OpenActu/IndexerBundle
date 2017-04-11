@@ -74,7 +74,7 @@ class ListIndexer extends AbstractIndexer
                 $mem = clone $this->l;
                 if(null !== $mem->getIndex()){
                     $this->setIndex($mem->getIndex()->getValue());
-                    $this->setData($mem->getData());
+                    $this->setData($mem->getData()->getValue());
                     $this->l = $mem->l;
                 }
                 else{
@@ -110,8 +110,9 @@ class ListIndexer extends AbstractIndexer
     {
       parent::checkNotNillable($index,$data);
 
-      $classname     = $this->getClassname();
-      $this->l       = new ListIndexer($classname);
+      $classnameIndex= $this->getClassnameIndex();
+      $classnameData = $this->getClassnameData();
+      $this->l       = new ListIndexer($classnameIndex, $classnameData);
     }
 
     /**
@@ -190,16 +191,16 @@ class ListIndexer extends AbstractIndexer
      *
      * @return string
      */
-    public function convertToDatabaseValue($depth=1)
+    public function convertToDatabaseValue($master=true)
     {
         $output = parent::convertToDatabaseValue();
 
         $output['l'] = null;
 
         if(!$this->isNillable()){
-            $output['l']    = $this->l->convertToDatabaseValue($depth+1);
+            $output['l']    = $this->l->convertToDatabaseValue(false);
         }
 
-        return (1 === $depth) ? json_encode($output) : $output;
+        return (true === $master) ? json_encode($output) : $output;
     }
 }

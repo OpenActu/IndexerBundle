@@ -4,18 +4,26 @@ namespace OpenActu\IndexerBundle\Model\Type;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 class NumericType extends AbstractType implements AbstractTypeInterface
 {
+    public static function strtotype($string)
+    {
+        return (int)$string;
+    }
+
     public function gt($value)
     {
         return ($this->getValue() > $value);
     }
+
     public function eq($value)
     {
         return ($this->getValue() === $value);
     }
+
     public function __toString()
     {
         return '@int:'.(string)$this->getValue();
     }
+
     public static function cast($value)
     {
         if(is_object($value)){

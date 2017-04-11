@@ -4,20 +4,28 @@ namespace OpenActu\IndexerBundle\Model\Type;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 class DatetimeType extends AbstractType implements AbstractTypeInterface
 {
+    public static function strtotype($string)
+    {
+        return $string;
+    }
+
     public function gt($value)
     {
         return ($this->getValue() > $value);
     }
+
     public function eq($value)
     {
 
         $result = ($this->getValue() == $value);
         return $result;
     }
+
     public function __toString()
     {
         return '@datetime:'.$this->getValue()->format("YmdHis");
     }
+
     public static function cast($value)
     {
         if(!is_object($value)){

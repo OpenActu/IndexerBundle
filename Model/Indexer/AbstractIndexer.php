@@ -24,23 +24,24 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
     }
     public function forceIndex($index,$type,$data)
     {
-        $this->index    = new $type($index);
+        $vindex = $type::strtotype($index);
+        $this->index    = new $type($vindex);
         $this->data     = $data;
     }
 
     public function convertToDatabaseValue()
     {
         $output = array(
-            'card' => $this->card(),
-            'context' => $this->getContext(),
-            'classname' => get_class($this),
-            'classnameType' => $this->getClassname(),
-            'index' => null,
-            'data' => null,
+            'n' => $this->card(),
+            't' => $this->getContext(),
+            'c' => get_class($this),
+            'p' => $this->getClassname(),
+            'i' => null,
+            'd' => null,
         );
         if(!$this->isNillable()){
-            $output['index'] = $this->getIndex()->convertToDatabaseValue();
-            $output['data']  = $this->getData();
+            $output['i'] = $this->getIndex()->convertToDatabaseValue();
+            $output['d']  = $this->getData();
         }
         return $output;
     }

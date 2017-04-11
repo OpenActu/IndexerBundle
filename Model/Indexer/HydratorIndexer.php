@@ -12,19 +12,17 @@ class HydratorIndexer
 
         if(null === $arr){ return null; }
 
-        $pFields = array('classname', 'classnameType', 'index', 'card', 'data', 'context');
+        $pFields = array('c', 'p', 'i', 'n', 'd', 't');
         foreach($pFields as $pField){
             $$pField = $arr->$pField;
             unset($arr->$pField);
         }
-        $indexer = new $classname($classnameType);
-        $indexer->forceCard($card);
-        $indexer->forceContext($context);
-        if(null !== $index)
-            $indexer->forceIndex($index->value, $classnameType,$data);
-        /**
-         * @todo rest l1 and l2
-         */
+        $indexer = new $c($p);
+        $indexer->forceCard($n);
+        $indexer->forceContext($t);
+        if(null !== $i){
+            $indexer->forceIndex($i->v, $p, $d);
+        }
         foreach(get_object_vars($arr) as $key => $subblock){
             $indexer->set($key,HydratorIndexer::hydrate($subblock,$depth+1));
         }

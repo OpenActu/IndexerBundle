@@ -1,6 +1,7 @@
 <?php
 namespace OpenActu\IndexerBundle\Model\Indexer;
 
+use OpenActu\IndexerBundle\Model\Type\AbstractType;
 class ListIndexer extends AbstractIndexer
 {
     /**
@@ -31,6 +32,28 @@ class ListIndexer extends AbstractIndexer
             $this->l = $mem;
         }
         else{ $this->l->attach($index,$data); }
+    }
+
+    /**
+     * return the position $pos from the mixed index $index
+     * @param AbstractType $index
+     */
+    public function cget(AbstractType $index)
+    {
+        if( get_class($this->getIndex()) != get_class($index) ){
+            throw new IndexerException(
+                IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRMSG,
+                IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRNO,
+                array(
+                    'type' => get_class($index),
+                    'type_expected' => get_class($this->getIndex())
+                )
+            );
+        }
+
+        if($this->isNillable()){ return 0; }
+        elseif($this->isEquals($index->getValue())){ return 0; }
+        else{ return 1+$this->l->cget($index); }
     }
 
     /**

@@ -14,4 +14,7 @@ interface IndexerExceptionInterface
 
     const INVALID_ORIGIN_DATA_ERRNO = 103;
     const INVALID_ORIGIN_DATA_ERRMSG= "%type% attempted. data of type %provenance% given";
+
+    const INVALID_TYPE_INDEX_EXPECTED_ERRNO = 104;
+    const INVALID_TYPE_INDEX_EXPECTED_ERRMSG = "%type_expected% expected. %type% found";
 }

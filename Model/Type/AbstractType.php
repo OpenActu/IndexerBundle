@@ -29,7 +29,6 @@ abstract class AbstractType
         return !$this->gt($value);
     }
 
-
     /**
      * convert current instance to database value
      *
@@ -37,10 +36,6 @@ abstract class AbstractType
      */
     public function convertToDatabaseValue()
     {
-        $arr = array(
-                'type' => get_class($this),
-                'value' => $this->getValue(),
-        );
-        return $arr;
+        return array('v' => $this->getValue());
     }
 }

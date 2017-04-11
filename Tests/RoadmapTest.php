@@ -52,7 +52,6 @@ class RoadmapTest extends KernelTestCase
          */
         $string = $indexer->convertToDatabaseValue();
         $rindexer = HydratorIndexer::hydrate($string);
-
         unset($indexer);
         $indexer = $rindexer;
 
@@ -91,7 +90,15 @@ class RoadmapTest extends KernelTestCase
          */
         $testIndexOrdonned = true;
         for($i = 0; ( $i< $indexer->card() ); $i++){
+
             $indexer->get($i,$index);
+
+            /**
+             * cget validation
+             */
+            $this->assertTrue($indexer->cget($index) === $i);
+
+
             if($i > 0)
                 $testIndexOrdonned = $testIndexOrdonned && $index->gte($pred);
             $pred = $index->getValue();
@@ -206,8 +213,10 @@ class RoadmapTest extends KernelTestCase
             4,
             5,
             6,
-            5,
-
+            12,
+            2,
+            100,
+            10,
         );
         $this->validateIndexer(NumericType::class, $indexes, $noindexes,ListIndexer::class);
 
@@ -228,7 +237,7 @@ class RoadmapTest extends KernelTestCase
             4,
             5,
             6,
-            5,
+            7,
 
         );
         $this->validateIndexer(NumericType::class, $indexes, $noindexes);

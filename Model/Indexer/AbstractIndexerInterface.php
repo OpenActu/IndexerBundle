@@ -1,6 +1,7 @@
 <?php
 namespace OpenActu\IndexerBundle\Model\Indexer;
 
+use OpenActu\IndexerBundle\Model\Type\AbstractType;
 interface AbstractIndexerInterface
 {
 
@@ -68,4 +69,10 @@ interface AbstractIndexerInterface
      * @return string
      */
     public function convertToDatabaseValue();
+
+    /**
+     * return the position $pos from the mixed index $index
+     * @param AbstractType $index
+     */
+    public function cget(AbstractType $index);
 }

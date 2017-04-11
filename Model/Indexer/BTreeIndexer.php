@@ -1,6 +1,8 @@
 <?php
 namespace OpenActu\IndexerBundle\Model\Indexer;
 
+use OpenActu\IndexerBundle\Exception\IndexerException;
+use OpenActu\IndexerBundle\Model\Type\AbstractType;
 class BTreeIndexer extends AbstractIndexer
 {
     /**
@@ -103,9 +105,32 @@ class BTreeIndexer extends AbstractIndexer
     }
 
     /**
+     * return the position $pos from the mixed index $index
+     * @param AbstractType $index
+     */
+    public function cget(AbstractType $index)
+    {
+        if( get_class($this->getIndex()) != get_class($index) ){
+            throw new IndexerException(
+                IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRMSG,
+                IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRNO,
+                array(
+                    'type' => get_class($index),
+                    'type_expected' => get_class($this->getIndex())
+                )
+            );
+        }
+
+        if($this->isNillable()){ return 0; }
+        if($this->isGreaterThan($index->getValue())){ return $this->l1->cget($index); }
+        elseif($this->isEquals($index->getValue())){ return $this->l1->card(); }
+        else{ return $this->l1->card()+1+$this->l2->cget($index); }
+    }
+    /**
      * check if the index exists
      *
      * @param mixed $index index to compare with
+     * @param int $position equivalent position
      * @return bool
      */
     public function exists($index)

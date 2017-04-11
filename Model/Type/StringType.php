@@ -4,11 +4,16 @@ namespace OpenActu\IndexerBundle\Model\Type;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 class StringType extends AbstractType implements AbstractTypeInterface
 {
+    public static function strtotype($string)
+    {
+        return $string;
+    }
 
     public function gt($value)
     {
         return (strcasecmp($this->getValue(),$value) > 0);
     }
+
     public function eq($value)
     {
         return ($this->getValue() === $value);

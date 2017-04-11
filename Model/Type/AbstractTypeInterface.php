@@ -4,6 +4,14 @@ namespace OpenActu\IndexerBundle\Model\Type;
 interface AbstractTypeInterface
 {
     /**
+     * convert string to valid type
+     *
+     * @param string $string
+     * @return mixed Formatted value
+     */
+    public static function strtotype($string);
+
+    /**
      * check if current value is greater than the data given
      *
      * @var mixed $value

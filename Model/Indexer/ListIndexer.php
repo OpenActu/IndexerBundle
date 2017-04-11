@@ -149,7 +149,7 @@ class ListIndexer extends AbstractIndexer
     public function max()
     {
         if($this->isNillable()){ return null; }
-        elseif($this->l->isNillable()){ return $this->getIndex()->getValue(); }
+        elseif($this->l->isNillable()){ return $this->getIndex(); }
         else{ return $this->l->max(); }
     }
 
@@ -161,7 +161,7 @@ class ListIndexer extends AbstractIndexer
     public function min()
     {
         if($this->isNillable()){ return null; }
-        return $this->getIndex()->getValue();
+        return $this->getIndex();
     }
 
     /**

@@ -18,30 +18,30 @@ interface AbstractIndexerInterface
     /**
      * data attachment
      *
-     * @var mixed $index
-     * @var mixed $data
+     * @param mixed $index
+     * @param mixed $data
      */
     public function attach($index,$data);
 
     /**
      * data detachment
      *
-     * @var mixed $index
+     * @param mixed $index
      */
     public function detach($index);
 
     /**
      * execute data writing
      *
-     * @var mixed $index
-     * @var mixed $data
+     * @param mixed $index
+     * @param mixed $data
      */
     public function checkNotNillable($index,$data);
 
     /**
      * test if current instance is less or equals to the variable given
      *
-     * @var mixed $index index to compare with
+     * @param mixed $index index to compare with
      * @return bool
      */
     public function isLessOrEqualsThan($index);
@@ -49,18 +49,53 @@ interface AbstractIndexerInterface
     /**
      * test if current instance is greater than the variable given
      *
-     * @var mixed $index index to compare with
+     * @param mixed $index index to compare with
      * @return bool
      */
     public function isGreaterThan($index);
+
+    /**
+     * test if current instance is equals to the variable given
+     *
+     * @param mixed $index index to compare with
+     * @return bool
+     */
     public function isEquals($index);
+
+    /**
+     * test if current instance is equals or greater than the variable given
+     *
+     * @param mixed $index index to compare with
+     * @return bool
+     */
     public function isGreaterOrEqualsThan($index);
     public function exists($index);
+
+    /**
+     * return the count indexes in the current node
+     *
+     * @return int Count indexes
+     */
     public function card();
+
+    /**
+     * return the highest index in the current node
+     *
+     * @return AbstractType|null $index
+     */
     public function max();
+
+    /**
+     * return the smallest index in the current node
+     *
+     * @return AbstractType|null $index
+     */
     public function min();
+
     public function score();
+
     public function __toString();
+
     public function get($pos=0,&$index=null);
 
     /**
@@ -72,7 +107,9 @@ interface AbstractIndexerInterface
 
     /**
      * return the position $pos from the mixed index $index
+     *
      * @param AbstractType $index
+     * @return int Position
      */
     public function cget(AbstractType $index);
 }

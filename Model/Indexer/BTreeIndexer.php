@@ -142,26 +142,26 @@ class BTreeIndexer extends AbstractIndexer
     }
 
     /**
-     * return the higher index value
+     * return the highest index value
      *
-     * @return mixed|null $index
+     * @return AbstractType|null $index
      */
     public function max()
     {
         if($this->isNillable()){ return null; }
-        elseif($this->l2->isNillable()){ return $this->getIndex()->getValue(); }
+        elseif($this->l2->isNillable()){ return $this->getIndex(); }
         else{ return $this->l2->max(); }
     }
 
     /**
      * return the smallest index value
      *
-     * @return mixed|null $index
+     * @return AbstractType|null $index
      */
     public function min()
     {
         if($this->isNillable()){ return null; }
-        elseif($this->l1->isNillable()){ return $this->getIndex()->getValue(); }
+        elseif($this->l1->isNillable()){ return $this->getIndex(); }
         else{ return $this->l1->min(); }
     }
 

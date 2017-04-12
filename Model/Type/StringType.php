@@ -9,6 +9,11 @@ class StringType extends AbstractType implements AbstractTypeInterface
         return $string;
     }
 
+    public function succ()
+    {
+        return new StringType($this->getValue().'0');
+    }
+
     public function gt($value)
     {
         return (strcasecmp($this->getValue(),$value) > 0);

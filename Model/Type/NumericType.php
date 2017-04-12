@@ -9,6 +9,11 @@ class NumericType extends AbstractType implements AbstractTypeInterface
         return (int)$string;
     }
 
+    public function succ()
+    {
+        return new NumericType($this->getValue()+1);
+    }
+
     public function gt($value)
     {
         return ($this->getValue() > $value);

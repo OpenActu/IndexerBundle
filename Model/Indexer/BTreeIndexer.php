@@ -68,7 +68,7 @@ class BTreeIndexer extends AbstractIndexer
     public function __toString()
     {
         if($this->isNillable()){ return '@empty'; }
-        else{ return '@node('.$this->getIndex().','.(string)$this->l1.','.(string)$this->l2.')'; }
+        else{ return '@node(['.$this->getIndex().']'.$this->getData().','.(string)$this->l1.','.(string)$this->l2.')'; }
     }
 
     /**
@@ -111,6 +111,8 @@ class BTreeIndexer extends AbstractIndexer
      */
     public function cget(AbstractType $index)
     {
+        if($this->isNillable()){ return 0; }
+
         if( get_class($this->getIndex()) != get_class($index) ){
             throw new IndexerException(
                 IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRMSG,
@@ -122,7 +124,6 @@ class BTreeIndexer extends AbstractIndexer
             );
         }
 
-        if($this->isNillable()){ return 0; }
         if($this->isGreaterThan($index->getValue())){ return $this->l1->cget($index); }
         elseif($this->isEquals($index->getValue())){ return $this->l1->card(); }
         else{ return $this->l1->card()+1+$this->l2->cget($index); }

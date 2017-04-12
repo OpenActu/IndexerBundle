@@ -96,7 +96,7 @@ class ListIndexer extends AbstractIndexer
     {
 
         if($this->isNillable()){ return '@nil'; }
-        else{ return '@cons('.$this->getIndex().','.(string)$this->l.')'; }
+        else{ return '@cons(['.$this->getIndex().']'.$this->getData().','.(string)$this->l.')'; }
 
     }
 

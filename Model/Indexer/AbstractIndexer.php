@@ -109,6 +109,8 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
         $this->objectData   = null;
         $this->card         = 0;
         $this->context      = self::CONTEXT_INIT;
+        $this->shorcutGt    = null;
+        $this->shorcutLt    = null;
     }
 
     public function getContext()
@@ -125,6 +127,11 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
     {
         $classnameData = $this->classnameData;
         $this->objectData = new $classnameData($data);
+    }
+
+    public function setShorcutGt($position)
+    {
+        $this->shorcutGt = $position;
     }
 
     public function getData()
@@ -169,26 +176,9 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
 
     public function __construct($classnameIndex, $classnameData)
     {
-        $array = array($classnameIndex,$classnameData);
-        foreach($array as $classname){
-            $interfaces = @class_implements($classname);
-            $isValidType= false;
-            if($interfaces)
-            {
-                foreach($interfaces as $interface)
-                {
-                    if($interface === AbstractTypeInterface::class)
-                        $isValidType = true;
-                }
-            }
+        Indexer::check($classnameIndex);
+        Indexer::check($classnameData);
 
-            if(!$isValidType)
-                throw new IndexerException(
-                    IndexerException::INVALID_TYPE_FOUND_ERRMSG,
-                    IndexerException::INVALID_TYPE_FOUND_ERRNO,
-                    array('type' => $classname)
-                );
-        }
         $this->classnameIndex = $classnameIndex;
         $this->classnameData  = $classnameData;
     }

@@ -7,7 +7,7 @@ use OpenActu\IndexerBundle\Model\Indexer\HydratorIndexer;
 use OpenActu\IndexerBundle\Model\Type\StringType;
 use OpenActu\IndexerBundle\Model\Type\NumericType;
 use OpenActu\IndexerBundle\Model\Type\DatetimeType;
-
+use OpenActu\IndexerBundle\Model\Indexer\RequestIndexer;
 /**
  *   -------------------
  *   |                 |
@@ -37,6 +37,9 @@ class RoadmapTest extends KernelTestCase
         $this->validateListStringType();
         $this->validateListNumericType();
         $this->validateListDatetimeType();
+
+        $this->validateBTreeStringReduce();
+        $this->validateBTreeNumericReduce();
     }
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)
@@ -242,5 +245,47 @@ class RoadmapTest extends KernelTestCase
         );
         $this->validateIndexer(NumericType::class, $indexes, $noindexes);
 
+    }
+
+    public function validateBTreeStringReduce()
+    {
+        $data = ['b','c','a','d','g','e','f'];
+        $this->validateReduce($data,BTreeIndexer::class,StringType::class,'c','f','b','g');
+    }
+
+    public function validateBTreeNumericReduce()
+    {
+        $data = [5,10,1,2,4,6,9,7,8];
+        $this->validateReduce($data,BTreeIndexer::class,NumericType::class,4,8,2,9);
+    }
+    public function validateReduce(array $data,$classIndexer,$classType,$min,$max,$lt,$gt)
+    {
+        $indexer = new $classIndexer($classType, $classType);
+        foreach($data as $i)
+            $indexer->attach($i,$i);
+
+        $request = new RequestIndexer($indexer);
+        $request->lt(new $classType($gt));
+        $request->gt(new $classType($lt));
+
+        /**
+         * check that the good bounds are found
+         *
+         */
+        $this->assertEquals($request->min()->getValue(), $min);
+        $this->assertEquals($request->max()->getValue(), $max);
+
+        $mem = $request->min();
+        $testOrderred = true;
+        for($i=1;$i<$request->card();$i++){
+            $testOrderred = $testOrderred && $request->get($i)->gt($mem->getValue());
+            $mem = $request->get($i);
+        }
+
+        /**
+         * check that the request indexer is orderred
+         *
+         */
+        $this->assertEquals($testOrderred, true);
     }
 }

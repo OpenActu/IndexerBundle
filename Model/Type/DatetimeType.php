@@ -4,6 +4,11 @@ namespace OpenActu\IndexerBundle\Model\Type;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 class DatetimeType extends AbstractType implements AbstractTypeInterface
 {
+    public function succ()
+    {
+        return new DatetimeType($this->getValue()->add(new \DateInterval('PT1S')));
+    }
+
     public static function strtotype($string)
     {
         return $string;

@@ -12,6 +12,13 @@ interface AbstractTypeInterface
     public static function strtotype($string);
 
     /**
+     * get the successor of a  specific value
+     *
+     * @return AbstractTypeInterface
+     */
+    public function succ();
+
+    /**
      * check if current value is greater than the data given
      *
      * @var mixed $value

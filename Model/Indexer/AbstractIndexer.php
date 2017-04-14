@@ -40,6 +40,14 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      */
     private $data;
 
+    public function __clone()
+    {
+        if(!$this->isNillable()){
+            $this->objectIndex      = clone $this->objectIndex;
+            $this->objectData       = clone $this->objectData;
+        }
+    }
+
     public function forceCard($card)
     {
         $this->card=$card;

@@ -8,6 +8,7 @@ use OpenActu\IndexerBundle\Model\Type\StringType;
 use OpenActu\IndexerBundle\Model\Type\NumericType;
 use OpenActu\IndexerBundle\Model\Type\DatetimeType;
 use OpenActu\IndexerBundle\Model\Indexer\RequestIndexer;
+use OpenActu\IndexerBundle\Exception\IndexerException;
 /**
  *   -------------------
  *   |                 |
@@ -34,12 +35,16 @@ class RoadmapTest extends KernelTestCase
         $this->validateBTreeStringType();
         $this->validateBTreeNumericType();
         $this->validateBTreeDatetimeType();
+
         $this->validateListStringType();
         $this->validateListNumericType();
         $this->validateListDatetimeType();
 
         $this->validateBTreeStringReduce();
         $this->validateBTreeNumericReduce();
+        $this->validateBTreeDatetimeReduce();
+
+        $this->validateBTreeComplexReduce();
     }
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)
@@ -258,6 +263,100 @@ class RoadmapTest extends KernelTestCase
         $data = [5,10,1,2,4,6,9,7,8];
         $this->validateReduce($data,BTreeIndexer::class,NumericType::class,4,8,2,9);
     }
+
+    public function validateBTreeDatetimeReduce()
+    {
+        $data = array(
+            new \DateTime("2015-01-01 00:00:00"),
+            new \DateTime("2015-06-01 00:00:00"),
+            new \DateTime("2016-06-01 00:00:00"),
+            new \DateTime("2017-01-01 00:00:00"),
+            new \DateTime("2017-06-01 00:00:00"),
+            new \DateTime("2017-06-01 00:00:01"),
+        );
+        $this->validateReduce($data,BTreeIndexer::class,DatetimeType::class,
+            new \DateTime("2015-06-01 00:00:00"),
+            new \DateTime("2017-06-01 00:00:00"),
+            new \DateTime("2015-01-01 00:00:00"),
+            new \DateTime("2017-06-01 00:00:01")
+        );
+    }
+
+    public function validateBTreeComplexReduce()
+    {
+        $indexer = new BTreeIndexer(NumericType::class,NumericType::class);
+
+        for($i=0;$i<100;$i++)
+            $indexer->attach($i,$i);
+
+        $request = new RequestIndexer($indexer);
+        $request
+            ->lt(new NumericType(95))
+            ->gt(new NumericType(92))
+            ->notIn(array(90,43,93,93,34))
+            ->execute();
+
+        $this->assertEquals($request->card(),1);
+        $this->assertEquals($request->get(0),new NumericType(94));
+
+        unset($request);
+
+        /**
+         * assert that the clonage goodly works
+         */
+        $this->assertTrue($indexer->exists(93));
+
+        /**
+         * check that the limit and offset works
+         */
+        $request = new RequestIndexer($indexer);
+        $request
+            ->gt(new NumericType(10))
+            ->lt(new NumericType(90))
+            ->offset(10)
+            ->limit(10)
+            ->execute();
+        $test = true;
+        for($i=0;$i<$request->card();$i++){
+            if($i < 10)
+                $test = $test && (null !== $request->get($i));
+            else
+                $test = $test && (null === $request->get($i));
+        }
+
+        $this->assertEquals($request->get(0), new NumericType(21));
+        $this->assertTrue($test);
+
+        /**
+         * check the in method of request
+         */
+        $request
+            ->reload()
+            ->in(array(1,3,4,7,7,4))
+            ->offset(0)
+            ->limit(1)
+            ->execute();
+
+        $this->assertEquals($request->get(0), new NumericType(1));
+
+        $request->reload()
+          ->offset(1)
+          ->limit(2)
+          ->execute();
+
+        $this->assertEquals($request->get(0), new NumericType(3));
+        $this->assertEquals($request->get(1), new NumericType(4));
+
+        /**
+         * @todo block the "in" methods (call only one time)
+         */
+        $msg = '';
+        try{ $request->reload()->in(array(2))->execute(); }
+        catch(IndexerException $e){ $msg = $e->getMessage(); }
+        $this->assertEquals($msg, IndexerException::NO_DOUBLE_CALL_ON_IN_ACCEPTED_ERRMSG);
+
+    }
+
     public function validateReduce(array $data,$classIndexer,$classType,$min,$max,$lt,$gt)
     {
         $indexer = new $classIndexer($classType, $classType);
@@ -265,8 +364,10 @@ class RoadmapTest extends KernelTestCase
             $indexer->attach($i,$i);
 
         $request = new RequestIndexer($indexer);
-        $request->lt(new $classType($gt));
-        $request->gt(new $classType($lt));
+        $request
+            ->lt(new $classType($gt))
+            ->gt(new $classType($lt))
+            ->execute();
 
         /**
          * check that the good bounds are found
@@ -287,5 +388,14 @@ class RoadmapTest extends KernelTestCase
          *
          */
         $this->assertEquals($testOrderred, true);
+
+        /**
+         * check the reload of request indexer
+         */
+        $request->reload()->execute();
+
+        $this->assertEquals($request->max(), $indexer->max());
+        $this->assertEquals($request->min(), $indexer->min());
+        $this->assertEquals($request->card(), $indexer->card());
     }
 }

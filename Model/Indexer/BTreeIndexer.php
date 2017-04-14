@@ -15,6 +15,15 @@ class BTreeIndexer extends AbstractIndexer
      */
     protected $l2 = null;
 
+    public function __clone()
+    {
+        if(null !== $this->l1)
+            $this->l1 = clone $this->l1;
+        if(null !== $this->l2)
+            $this->l2 = clone $this->l2;
+        parent::__clone();
+    }
+
     /**
      * data attachment
      *

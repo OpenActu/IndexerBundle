@@ -9,6 +9,13 @@ class ListIndexer extends AbstractIndexer
      */
     protected $l = null;
 
+    public function __clone()
+    {
+        if(null !== $this->l)
+            $this->l = clone $this->l;
+        parent::__clone();
+    }
+
     /**
      * data attachment
      *

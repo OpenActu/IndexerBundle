@@ -17,4 +17,10 @@ interface IndexerExceptionInterface
 
     const INVALID_TYPE_INDEX_EXPECTED_ERRNO = 104;
     const INVALID_TYPE_INDEX_EXPECTED_ERRMSG = "%type_expected% expected. %type% found";
+
+    const CALL_RESPONSE_BEFORE_EXECUTE_ERRNO = 105;
+    const CALL_RESPONSE_BEFORE_EXECUTE_ERRMSG= 'you need to call the "execute" method before any call of response';
+
+    const NO_DOUBLE_CALL_ON_IN_ACCEPTED_ERRNO = 106;
+    const NO_DOUBLE_CALL_ON_IN_ACCEPTED_ERRMSG= 'you can\'t call two times the "in" method';
 }

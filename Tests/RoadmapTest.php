@@ -286,8 +286,14 @@ class RoadmapTest extends KernelTestCase
     {
         $indexer = new BTreeIndexer(NumericType::class,NumericType::class);
 
-        for($i=0;$i<100;$i++)
+        for($i=0;$i<1000;$i++){
+            if(($i%50===0) && $i>0){
+                $nindexer = $indexer->optimize();
+                unset($indexer);
+                $indexer = $nindexer;
+            }
             $indexer->attach($i,$i);
+        }
 
         $request = new RequestIndexer($indexer);
         $request
@@ -316,6 +322,7 @@ class RoadmapTest extends KernelTestCase
             ->offset(10)
             ->limit(10)
             ->execute();
+
         $test = true;
         for($i=0;$i<$request->card();$i++){
             if($i < 10)
@@ -348,13 +355,18 @@ class RoadmapTest extends KernelTestCase
         $this->assertEquals($request->get(1), new NumericType(4));
 
         /**
-         * @todo block the "in" methods (call only one time)
+         * block the "in" methods (call only one time)
          */
         $msg = '';
-        try{ $request->reload()->in(array(2))->execute(); }
+        try{ $request->reload()->in(array(2))->limit(1)->execute(); }
         catch(IndexerException $e){ $msg = $e->getMessage(); }
         $this->assertEquals($msg, IndexerException::NO_DOUBLE_CALL_ON_IN_ACCEPTED_ERRMSG);
 
+        /**
+         * validate the notIn method good working
+         */
+        $request->reload()->notIn(array(1))->limit(1)->execute();
+        $this->assertEquals($request->get(0), new NumericType(3));
     }
 
     public function validateReduce(array $data,$classIndexer,$classType,$min,$max,$lt,$gt)

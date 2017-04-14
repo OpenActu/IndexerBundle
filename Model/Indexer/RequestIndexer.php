@@ -5,6 +5,7 @@ use OpenActu\IndexerBundle\Model\Type\AbstractTypeInterface;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 class RequestIndexer
 {
+    const MAX_LINE_RETURNED = 1000;
     /**
      * @var bool $executeDone
      */
@@ -91,11 +92,18 @@ class RequestIndexer
 
         if( $this->inIndexValues )
         {
+            if(null === $this->limit){
+                $this->limit = self::MAX_LINE_RETURNED;
+            }
             $max = $this->offset+$this->limit;
             for($i=0, $found=0;($i < $this->indexer->card()) && ($found<$max);$i++){
                 $data = $this->indexer->get($i,$index);
                 if(in_array($index,$this->inIndexValues)){
                     $indexer->attach($index->getValue(),$data->getValue());
+                    if(($i%50===0) && ($i>0))
+                    {
+                        $indexer = $indexer->optimize();
+                    }
                     $found++;
                 }
             }
@@ -255,7 +263,6 @@ class RequestIndexer
                 array()
             );
         }
-
         if( (null !== $this->maxPos) && (null !== $this->minPos) && ($this->maxPos <= $this->minPos) ){ return 0; }
         $min = ($this->minPos) ? $this->minPos : 0;
         $max = ($this->maxPos) ? $this->maxPos : $this->indexer->card();

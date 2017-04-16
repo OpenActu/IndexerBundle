@@ -6,6 +6,9 @@ use OpenActu\IndexerBundle\Exception\IndexerException;
 class RequestIndexer
 {
     const MAX_LINE_RETURNED = 1000;
+
+    const AUTO_OPTIMIZE     = 100;
+
     /**
      * @var bool $executeDone
      */
@@ -64,6 +67,11 @@ class RequestIndexer
         unset($this->indexer);
     }
 
+    public function getIndexer()
+    {
+        return $this->indexer;
+    }
+    
     /**
      * Set Indexer to block result greater than or equals to current index value
      *
@@ -100,7 +108,7 @@ class RequestIndexer
                 $data = $this->indexer->get($i,$index);
                 if(in_array($index,$this->inIndexValues)){
                     $indexer->attach($index->getValue(),$data->getValue());
-                    if(($i%50===0) && ($i>0))
+                    if(($i%self::AUTO_OPTIMIZE===0) && ($i>0))
                     {
                         $indexer = $indexer->optimize();
                     }

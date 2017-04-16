@@ -9,6 +9,8 @@ use OpenActu\IndexerBundle\Model\Type\NumericType;
 use OpenActu\IndexerBundle\Model\Type\DatetimeType;
 use OpenActu\IndexerBundle\Model\Indexer\RequestIndexer;
 use OpenActu\IndexerBundle\Exception\IndexerException;
+use OpenActu\IndexerBundle\Model\Indexer\Invoker;
+
 /**
  *   -------------------
  *   |                 |
@@ -286,21 +288,16 @@ class RoadmapTest extends KernelTestCase
     {
         $indexer = new BTreeIndexer(NumericType::class,NumericType::class);
 
-        for($i=0;$i<1000;$i++){
-            if(($i%50===0) && $i>0){
-                $nindexer = $indexer->optimize();
-                unset($indexer);
-                $indexer = $nindexer;
-            }
-            $indexer->attach($i,$i);
-        }
+        for($i=0;$i<1000;$i++)
+            Invoker::attach($indexer,$i,$i);
 
-        $request = new RequestIndexer($indexer);
-        $request
-            ->lt(new NumericType(95))
-            ->gt(new NumericType(92))
-            ->notIn(array(90,43,93,93,34))
-            ->execute();
+        $request = Invoker::getRequest($indexer,
+            array(
+                'lt' => 95,
+                'gt' => 92,
+                'notIn' => array(90,43,93,93,34),
+            )
+        );
 
         $this->assertEquals($request->card(),1);
         $this->assertEquals($request->get(0),new NumericType(94));
@@ -315,13 +312,14 @@ class RoadmapTest extends KernelTestCase
         /**
          * check that the limit and offset works
          */
-        $request = new RequestIndexer($indexer);
-        $request
-            ->gt(new NumericType(10))
-            ->lt(new NumericType(90))
-            ->offset(10)
-            ->limit(10)
-            ->execute();
+        $request = Invoker::getRequest($indexer,
+            array(
+                'gt' => 10,
+                'lt' => 90,
+                'offset' => 10,
+                'limit' => 10,
+            )
+        );
 
         $test = true;
         for($i=0;$i<$request->card();$i++){
@@ -336,13 +334,16 @@ class RoadmapTest extends KernelTestCase
 
         /**
          * check the in method of request
+         *
+         * we use the alternative way with Invoker::refreshRequest 
          */
-        $request
-            ->reload()
-            ->in(array(1,3,4,7,7,4))
-            ->offset(0)
-            ->limit(1)
-            ->execute();
+        $request = Invoker::refreshRequest($request,
+            array(
+                'in' => array(1,3,4,7,7,4),
+                'offset' => 0,
+                'limit' => 1,
+            )
+        );
 
         $this->assertEquals($request->get(0), new NumericType(1));
 

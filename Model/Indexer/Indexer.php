@@ -17,15 +17,6 @@ class Indexer
     }
 
     /**
-     *
-     * @return AbstractTypeInterface
-     */
-    public static function diff(AbstractIndexerInterface $a, AbstractIndexerInterface $b)
-    {
-
-    }
-
-    /**
      * Check if classname is interfaced with Indexer
      *
      * @param string $classname

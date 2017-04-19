@@ -310,6 +310,31 @@ class RequestIndexer
     }
 
     /**
+     * Make a difference between datas from a and b with preservation of indexes from a
+     *
+     * @return AbstractTypeInterface
+     */
+    public static function diff(RequestIndexer $a, RequestIndexer $b)
+    {
+        $datas_a = $a->exportDatas();
+        $datas_b = $b->exportDatas();
+
+        $datas = array_diff($datas_a, $datas_b);
+
+        $cdata   = $a->indexer->getClassnameData();
+        $cindex  = $a->indexer->getClassnameIndex();
+        $indexer = get_class($a->indexer);
+
+        $output = new $indexer($cdata,$cindex);
+
+        for($i=0;( $i<$a->card() ) && ( null !== ( $data = $a->get($i,$index) ) );$i++)
+            if(in_array($data, $datas))
+                Invoker::attach($output, $index->getValue(), $data->getValue());
+
+        return Invoker::getRequest($output,array());
+    }
+
+    /**
      * Make an intersection between datas from a and b with preservation of indexes from a
      *
      * @return AbstractIndexerInterface

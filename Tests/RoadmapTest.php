@@ -431,7 +431,7 @@ class RoadmapTest extends KernelTestCase
         Invoker::attach($indexer_a, 25, 996);
         Invoker::attach($indexer_b, 25, 996);
 
-        $request_a = Invoker::getRequest($indexer_a,array('lt' => 100));
+        $request_a = Invoker::getRequest($indexer_a,array('lt' => 100,'gt' => 0));
         $request_b = Invoker::getRequest($indexer_b,array('lt' => 60));
         $request_c = RequestIndexer::intersect($request_a, $request_b);
 
@@ -441,6 +441,34 @@ class RoadmapTest extends KernelTestCase
 
         $this->assertEquals($request_c->get(0)->getValue(), 998);
         $this->assertEquals($request_c->get(1), null);
+
+        /**
+         * diff between RequestIndexer
+         *
+         */
+         $indexer_a = new ListIndexer(NumericType::class,AutoIncrementType::class);
+         $indexer_b = new ListIndexer(NumericType::class,AutoIncrementType::class);
+
+         Invoker::attach($indexer_a, 1, 999);
+         Invoker::attach($indexer_b, 100, 999);
+
+         Invoker::attach($indexer_a, 50, 998);
+         Invoker::attach($indexer_b, 50, 998);
+
+         Invoker::attach($indexer_a, 100, 997);
+         Invoker::attach($indexer_b, 1, 997);
+
+         Invoker::attach($indexer_a, 25, 996);
+         Invoker::attach($indexer_b, 25, 996);
+
+
+         $request_a = Invoker::getRequest($indexer_a,array('lt' => 100));
+         $request_b = Invoker::getRequest($indexer_b,array('lt' => 60));
+         $request_c = RequestIndexer::diff($request_a, $request_b);
+
+         $this->assertEquals($request_c->card(), 1);
+         $this->assertEquals($request_c->get(0)->getValue(), 999);
+         $this->assertEquals($request_c->get(1), null);
 
     }
 
@@ -486,17 +514,21 @@ class RoadmapTest extends KernelTestCase
         $indexer_a = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
         $indexer_b = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
 
-        Invoker::attach($indexer_a, 1, 999);
-        Invoker::attach($indexer_b, 100, 999);
+        // A AND B = 0
+        Invoker::attach($indexer_a, 1, 999);    # in
+        Invoker::attach($indexer_b, 100, 999);  # out
 
-        Invoker::attach($indexer_a, 50, 998);
-        Invoker::attach($indexer_b, 50, 998);
+        // A AND B = 1
+        Invoker::attach($indexer_a, 50, 998);   # in
+        Invoker::attach($indexer_b, 50, 998);   # in
 
-        Invoker::attach($indexer_a, 100, 997);
-        Invoker::attach($indexer_b, 1, 997);
+        // A AND B = 0
+        Invoker::attach($indexer_a, 100, 997);  # out
+        Invoker::attach($indexer_b, 1, 997);    # in
 
-        Invoker::attach($indexer_a, 25, 996);
-        Invoker::attach($indexer_b, 25, 996);
+        // A AND B = 1
+        Invoker::attach($indexer_a, 25, 996);   # in
+        Invoker::attach($indexer_b, 25, 996);   # in
 
 
         $request_a = Invoker::getRequest($indexer_a,array('lt' => 100));
@@ -507,6 +539,35 @@ class RoadmapTest extends KernelTestCase
 
         $this->assertEquals($request_c->get(0)->getValue(), 998);
         $this->assertEquals($request_c->get(1), null);
+
+        /**
+         * diff between RequestIndexer
+         *
+         */
+         $indexer_a = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
+         $indexer_b = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
+
+         Invoker::attach($indexer_a, 1, 999);
+         Invoker::attach($indexer_b, 100, 999);
+
+         Invoker::attach($indexer_a, 50, 998);
+         Invoker::attach($indexer_b, 50, 998);
+
+         Invoker::attach($indexer_a, 100, 997);
+         Invoker::attach($indexer_b, 1, 997);
+
+         Invoker::attach($indexer_a, 25, 996);
+         Invoker::attach($indexer_b, 25, 996);
+
+
+         $request_a = Invoker::getRequest($indexer_a,array('lt' => 100));
+         $request_b = Invoker::getRequest($indexer_b,array('lt' => 60));
+         $request_c = RequestIndexer::diff($request_a, $request_b);
+
+         $this->assertEquals($request_c->card(), 1);
+         $this->assertEquals($request_c->get(0)->getValue(), 999);
+         $this->assertEquals($request_c->get(1), null);
+
     }
 
     public function validateReduce(array $data,$classIndexer,$classType,$min,$max,$lt,$gt)

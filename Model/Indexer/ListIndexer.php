@@ -2,6 +2,7 @@
 namespace OpenActu\IndexerBundle\Model\Indexer;
 
 use OpenActu\IndexerBundle\Model\Type\AbstractType;
+use OpenActu\IndexerBundle\Exception\IndexerException;
 class ListIndexer extends AbstractIndexer
 {
     /**
@@ -47,19 +48,19 @@ class ListIndexer extends AbstractIndexer
      */
     public function cget(AbstractType $index)
     {
-        if( get_class($this->getIndex()) != get_class($index) ){
+        if( $this->getClassnameIndex() != get_class($index) ){
             throw new IndexerException(
                 IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRMSG,
                 IndexerException::INVALID_TYPE_INDEX_EXPECTED_ERRNO,
                 array(
                     'type' => get_class($index),
-                    'type_expected' => get_class($this->getIndex())
+                    'type_expected' => $this->getClassnameIndex()
                 )
             );
         }
 
         if($this->isNillable()){ return 0; }
-        elseif($this->isEquals($index->getValue())){ return 0; }
+        elseif($this->isEquals($index->getValue()) || $this->isGreaterThan($index->getValue())){ return 0; }
         else{ return 1+$this->l->cget($index); }
     }
 

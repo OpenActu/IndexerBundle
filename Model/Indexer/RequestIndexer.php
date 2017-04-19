@@ -80,7 +80,6 @@ class RequestIndexer
     public function lt(AbstractTypeInterface $index)
     {
         $this->maxPos = $this->indexer->cget($index);
-
         return $this;
     }
 
@@ -153,13 +152,13 @@ class RequestIndexer
         return $position;
     }
 
-    public function get($position)
+    public function get($position,&$index=null)
     {
         $position = $this->_getOffsetPosition($position);
 
         if((null === $position) || ($position >= $this->card()) || ($position < 0))
             return null;
-        return $this->indexer->get($position + $this->minPos);
+        return $this->indexer->get($position + $this->minPos, $index);
     }
     /**
      * Set Indexer to block result greater than current index value
@@ -296,12 +295,42 @@ class RequestIndexer
     }
 
     /**
+     * Export the datas in current Request index
+     *
+     * @return array AbstractTypeInterface[]
+     */
+    public function exportDatas()
+    {
+        $output = array();
+        for($i=0;( $i<$this->card() ) && ( null !== ( $data = $this->get($i,$index) ) );$i++)
+        {
+            $output[] = $data;
+        }
+        return $output;
+    }
+
+    /**
      * Make an intersection between datas from a and b with preservation of indexes from a
      *
      * @return AbstractIndexerInterface
      */
-    public function intersect(AbstractIndexerInterface $a)
+    public static function intersect(RequestIndexer $a, RequestIndexer $b)
     {
+        $datas_a = $a->exportDatas();
+        $datas_b = $b->exportDatas();
 
+        $datas = array_intersect($datas_a, $datas_b);
+
+        $cdata   = $a->indexer->getClassnameData();
+        $cindex  = $a->indexer->getClassnameIndex();
+        $indexer = get_class($a->indexer);
+
+        $output = new $indexer($cdata,$cindex);
+
+        for($i=0;( $i<$a->card() ) && ( null !== ( $data = $a->get($i,$index) ) );$i++)
+            if(in_array($data, $datas))
+                Invoker::attach($output, $index->getValue(), $data->getValue());
+
+        return Invoker::getRequest($output,array());
     }
 }

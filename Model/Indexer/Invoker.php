@@ -1,6 +1,7 @@
 <?php
 namespace OpenActu\IndexerBundle\Model\Indexer;
 
+use OpenActu\IndexerBundle\Model\Indexer\AbstractIndexerInterface;
 use OpenActu\IndexerBundle\Model\Indexer\RequestIndexer;
 class Invoker
 {
@@ -12,13 +13,13 @@ class Invoker
         return self::__callRequest($request, $parameters);
     }
 
-    public static function getRequest($indexer, array $parameters=array())
+    public static function getRequest(AbstractIndexerInterface $indexer, array $parameters=array())
     {
         $request = new RequestIndexer($indexer);
         return self::__callRequest($request, $parameters);
     }
 
-    private static function __callRequest($request, array $parameters=array())
+    private static function __callRequest(RequestIndexer $request, array $parameters=array())
     {
         if(count($parameters)>0)
         {
@@ -34,8 +35,8 @@ class Invoker
                         $request->$rule($parameter);
                 }
             }
-            $request->execute();
         }
+        $request->execute();
         return $request;
     }
     public static function attach(&$indexer,$index, $data)

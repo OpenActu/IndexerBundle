@@ -49,6 +49,7 @@ class RoadmapTest extends KernelTestCase
 
         $this->validateBTreeComplexReduce();
         $this->validateBTreeIntersectAndDiff();
+        $this->validateListIntersectAndDiff();
     }
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)
@@ -372,6 +373,77 @@ class RoadmapTest extends KernelTestCase
         $this->assertEquals($request->get(0), new NumericType(3));
     }
 
+    public function validateListIntersectAndDiff()
+    {
+        $increment = AutoIncrementType::increment();
+        $indexer_a = new ListIndexer(NumericType::class,AutoIncrementType::class);
+        $indexer_b = new ListIndexer(StringType::class, AutoIncrementType::class);
+
+        function getLRandomText(){
+            $rand = rand(1,1000);
+            $text = '';
+            do{ $rest = $rand%10; $rand = (int)$rand/10; $text.=chr(70+$rest); }while($rand > 0);
+            return $text;
+        }
+
+        for($i=0;$i<100; $i++){
+            $z          = rand(1,1000);
+            $increment  = AutoIncrementType::increment();
+
+            Invoker::attach($indexer_a, $z, $increment);
+            if(0===$i%2)
+                Invoker::attach($indexer_b, getLRandomText(), $increment);
+        }
+
+        /**
+         * check if check on data works
+         */
+        $increment = AutoIncrementType::increment();
+        $indexer_a->attach(43663443, 4363266);
+
+        $test = $indexer_a->existsOnData(4363266);
+        $test2= $indexer_a->existsOnData(346346346436);
+        $this->assertTrue($test && !$test2);
+
+        unset($indexer_a);
+        unset($indexer_b);
+
+        /**
+         * Intersection between RequestIndexer
+         *
+         */
+        $indexer_a = new ListIndexer(NumericType::class,AutoIncrementType::class);
+        $indexer_b = new ListIndexer(NumericType::class,AutoIncrementType::class);
+
+        // reject
+        Invoker::attach($indexer_a, 1, 999);
+        Invoker::attach($indexer_b, 100, 999);
+
+        // valid
+        Invoker::attach($indexer_a, 50, 998);
+        Invoker::attach($indexer_b, 50, 998);
+
+        // reject
+        Invoker::attach($indexer_a, 100, 997);
+        Invoker::attach($indexer_b, 1, 997);
+
+        // valid
+        Invoker::attach($indexer_a, 25, 996);
+        Invoker::attach($indexer_b, 25, 996);
+
+        $request_a = Invoker::getRequest($indexer_a,array('lt' => 100));
+        $request_b = Invoker::getRequest($indexer_b,array('lt' => 60));
+        $request_c = RequestIndexer::intersect($request_a, $request_b);
+
+        $request_c
+        ->offset(1)
+        ->limit(1)->execute();
+
+        $this->assertEquals($request_c->get(0)->getValue(), 998);
+        $this->assertEquals($request_c->get(1), null);
+
+    }
+
     public function validateBTreeIntersectAndDiff()
     {
         $increment = AutoIncrementType::increment();
@@ -389,9 +461,9 @@ class RoadmapTest extends KernelTestCase
             $z          = rand(1,1000);
             $increment  = AutoIncrementType::increment();
 
-            $indexer_a->attach($z,$increment);
-            $indexer_b->attach(getRandomText(),$increment);
-
+            Invoker::attach($indexer_a, $z, $increment);
+            if(0===$i%2)
+                Invoker::attach($indexer_b, getRandomText(), $increment);
         }
 
         /**
@@ -404,11 +476,37 @@ class RoadmapTest extends KernelTestCase
         $test2= $indexer_a->existsOnData(346346346436);
         $this->assertTrue($test && !$test2);
 
-        /**
-         * build the intersect function
-         */
-//        $indexer_a->intersect($indexer_b);
+        unset($indexer_a);
+        unset($indexer_b);
 
+        /**
+         * Intersection between RequestIndexer
+         *
+         */
+        $indexer_a = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
+        $indexer_b = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
+
+        Invoker::attach($indexer_a, 1, 999);
+        Invoker::attach($indexer_b, 100, 999);
+
+        Invoker::attach($indexer_a, 50, 998);
+        Invoker::attach($indexer_b, 50, 998);
+
+        Invoker::attach($indexer_a, 100, 997);
+        Invoker::attach($indexer_b, 1, 997);
+
+        Invoker::attach($indexer_a, 25, 996);
+        Invoker::attach($indexer_b, 25, 996);
+
+
+        $request_a = Invoker::getRequest($indexer_a,array('lt' => 100));
+        $request_b = Invoker::getRequest($indexer_b,array('lt' => 60));
+        $request_c = RequestIndexer::intersect($request_a, $request_b);
+
+        $request_c->offset(1)->limit(1)->execute();
+
+        $this->assertEquals($request_c->get(0)->getValue(), 998);
+        $this->assertEquals($request_c->get(1), null);
     }
 
     public function validateReduce(array $data,$classIndexer,$classType,$min,$max,$lt,$gt)

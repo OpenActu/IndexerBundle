@@ -63,7 +63,7 @@ class BTreeIndexer extends AbstractIndexer
 
                 for($i=0;$i<$node->card();$i++){
                     $tdata = $node->get($i,$tvalue);
-                    if( $tvalue->getValue() !== $node->getIndex()->getValue() )
+                    if((null !== $tdata) && ($tvalue->getValue() !== $node->getIndex()->getValue()) )
                         $this->attach($tvalue->getValue(),$tdata->getValue());
             }
 

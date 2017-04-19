@@ -71,7 +71,7 @@ class RequestIndexer
     {
         return $this->indexer;
     }
-    
+
     /**
      * Set Indexer to block result greater than or equals to current index value
      *
@@ -296,8 +296,12 @@ class RequestIndexer
     }
 
     /**
-     * Make a diff between the current reference and the RequestIndexer given in parameters
+     * Make an intersection between datas from a and b with preservation of indexes from a
      *
-     * @param RequestIndexer $indexer
+     * @return AbstractIndexerInterface
      */
+    public function intersect(AbstractIndexerInterface $a)
+    {
+
+    }
 }

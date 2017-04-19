@@ -112,4 +112,12 @@ interface AbstractIndexerInterface
      * @return int Position
      */
     public function cget(AbstractType $index);
+
+    /**
+     * check if data exists
+     *
+     * return an exception in case of detection, nothing else
+     * @param mixed $data
+     */
+    public function __checkExistsOnData($data);
 }

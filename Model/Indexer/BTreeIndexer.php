@@ -137,11 +137,26 @@ class BTreeIndexer extends AbstractIndexer
         elseif($this->isEquals($index->getValue())){ return $this->l1->card(); }
         else{ return $this->l1->card()+1+$this->l2->cget($index); }
     }
+
+    /**
+     * check if data exists
+     *
+     * return an exception in case of detection, nothing else
+     * @param mixed $data
+     */
+    public function __checkExistsOnData($data)
+    {
+        if($this->isNillable()){ return; }
+        elseif($this->isEquals($data,false)){ throw new \Exception("data found"); }
+        else{
+            $this->l1->__checkExistsOnData($data);
+            $this->l2->__checkExistsOnData($data);
+        }
+    }
     /**
      * check if the index exists
      *
      * @param mixed $index index to compare with
-     * @param int $position equivalent position
      * @return bool
      */
     public function exists($index)

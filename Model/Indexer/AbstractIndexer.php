@@ -226,11 +226,27 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
      * test if current instance is equals to the variable given
      *
      * @param mixed $index index to compare with
+     * @param bool $testOnIndex check if the test must be done on index (true) or data (false)
      * @return bool
      */
-    public function isEquals($index)
+    public function isEquals($index, $testOnIndex=true)
     {
-        return $this->objectIndex->eq($index);
+        if(true === $testOnIndex)
+            return $this->objectIndex->eq($index);
+        return $this->objectData->eq($index);
+    }
+
+
+    /**
+     * check if the data exists
+     *
+     * @param AbstractTypeInterface $data Data to compare with
+     * @return bool Data exists
+     */
+    public function existsOnData($data)
+    {
+        try{ $this->__checkExistsOnData($data); return false; }
+        catch(\Exception $e){ return true; }
     }
 
     /**

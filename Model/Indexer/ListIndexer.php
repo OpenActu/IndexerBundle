@@ -108,6 +108,20 @@ class ListIndexer extends AbstractIndexer
     }
 
     /**
+     * check if data exists
+     *
+     * return an exception in case of detection, nothing else
+     * @param mixed $data
+     */
+    public function __checkExistsOnData($data)
+    {
+        if($this->isNillable()){ return; }
+        elseif($this->isEquals($data,false)){ throw new \Exception("data found"); }
+        else{
+            $this->l->__checkExistsOnData($data);
+        }
+    }
+    /**
      * execute data writing
      *
      * @var mixed $index

@@ -8,16 +8,6 @@ class Indexer
 {
 
     /**
-     * Make an intersection between datas from a and b with preservation of indexes from a
-     *
-     * @return AbstractIndexerInterface
-     */
-    public static function intersect(AbstractIndexerInterface $a, AbstractIndexerInterface $b)
-    {
-
-    }
-
-    /**
      *
      * @return AbstractIndexerInterface
      */

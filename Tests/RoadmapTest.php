@@ -10,6 +10,7 @@ use OpenActu\IndexerBundle\Model\Type\DatetimeType;
 use OpenActu\IndexerBundle\Model\Indexer\RequestIndexer;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 use OpenActu\IndexerBundle\Model\Indexer\Invoker;
+use OpenActu\IndexerBundle\Model\Type\AutoIncrementType;
 
 /**
  *   -------------------
@@ -47,6 +48,7 @@ class RoadmapTest extends KernelTestCase
         $this->validateBTreeDatetimeReduce();
 
         $this->validateBTreeComplexReduce();
+        $this->validateBTreeIntersectAndDiff();
     }
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)
@@ -335,7 +337,7 @@ class RoadmapTest extends KernelTestCase
         /**
          * check the in method of request
          *
-         * we use the alternative way with Invoker::refreshRequest 
+         * we use the alternative way with Invoker::refreshRequest
          */
         $request = Invoker::refreshRequest($request,
             array(
@@ -368,6 +370,45 @@ class RoadmapTest extends KernelTestCase
          */
         $request->reload()->notIn(array(1))->limit(1)->execute();
         $this->assertEquals($request->get(0), new NumericType(3));
+    }
+
+    public function validateBTreeIntersectAndDiff()
+    {
+        $increment = AutoIncrementType::increment();
+        $indexer_a = new BTreeIndexer(NumericType::class,AutoIncrementType::class);
+        $indexer_b = new BTreeIndexer(StringType::class, AutoIncrementType::class);
+
+        function getRandomText(){
+            $rand = rand(1,1000);
+            $text = '';
+            do{ $rest = $rand%10; $rand = (int)$rand/10; $text.=chr(70+$rest); }while($rand > 0);
+            return $text;
+        }
+
+        for($i=0;$i<100; $i++){
+            $z          = rand(1,1000);
+            $increment  = AutoIncrementType::increment();
+
+            $indexer_a->attach($z,$increment);
+            $indexer_b->attach(getRandomText(),$increment);
+
+        }
+
+        /**
+         * check if check on data works
+         */
+        $increment = AutoIncrementType::increment();
+        $indexer_a->attach(43663443, 4363266);
+
+        $test = $indexer_a->existsOnData(4363266);
+        $test2= $indexer_a->existsOnData(346346346436);
+        $this->assertTrue($test && !$test2);
+
+        /**
+         * build the intersect function
+         */
+//        $indexer_a->intersect($indexer_b);
+
     }
 
     public function validateReduce(array $data,$classIndexer,$classType,$min,$max,$lt,$gt)

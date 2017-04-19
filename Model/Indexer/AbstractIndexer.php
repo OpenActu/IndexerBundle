@@ -184,8 +184,8 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
 
     public function __construct($classnameIndex, $classnameData)
     {
-        Indexer::check($classnameIndex);
-        Indexer::check($classnameData);
+        self::check($classnameIndex);
+        self::check($classnameData);
 
         $this->classnameIndex = $classnameIndex;
         $this->classnameData  = $classnameData;
@@ -265,4 +265,31 @@ abstract class AbstractIndexer implements AbstractIndexerInterface
         return $this->card;
     }
 
+    /**
+     * Check if classname is interfaced with Indexer
+     *
+     * @param string $classname
+     * @return bool
+     */
+    public static function check($classname)
+    {
+        $interfaces = @class_implements($classname);
+        $isValidType= false;
+        if($interfaces)
+        {
+            foreach($interfaces as $interface)
+            {
+                if($interface === AbstractTypeInterface::class)
+                    $isValidType = true;
+            }
+        }
+
+        if(!$isValidType)
+            throw new IndexerException(
+                IndexerException::INVALID_TYPE_FOUND_ERRMSG,
+                IndexerException::INVALID_TYPE_FOUND_ERRNO,
+                array('type' => $classname)
+            );
+        return true;
+    }
 }

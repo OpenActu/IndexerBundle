@@ -350,12 +350,12 @@ class RequestIndexer
         $cindex  = $a->indexer->getClassnameIndex();
         $indexer = get_class($a->indexer);
 
-        $output = new $indexer($cdata,$cindex);
+        $output = new $indexer($cindex,$cdata);
 
         for($i=0;( $i<$a->card() ) && ( null !== ( $data = $a->get($i,$index) ) );$i++)
             if(in_array($data, $datas))
                 Invoker::attach($output, $index->getValue(), $data->getValue());
-
+                
         return Invoker::getRequest($output,array());
     }
 }

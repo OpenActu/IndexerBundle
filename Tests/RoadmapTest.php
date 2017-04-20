@@ -11,6 +11,7 @@ use OpenActu\IndexerBundle\Model\Indexer\RequestIndexer;
 use OpenActu\IndexerBundle\Exception\IndexerException;
 use OpenActu\IndexerBundle\Model\Indexer\Invoker;
 use OpenActu\IndexerBundle\Model\Type\AutoIncrementType;
+use OpenActu\IndexerBundle\Model\RequestHandler;
 
 /**
  *   -------------------
@@ -35,6 +36,7 @@ class RoadmapTest extends KernelTestCase
 
     public function testIndex()
     {
+
         $this->validateBTreeStringType();
         $this->validateBTreeNumericType();
         $this->validateBTreeDatetimeType();
@@ -50,6 +52,38 @@ class RoadmapTest extends KernelTestCase
         $this->validateBTreeComplexReduce();
         $this->validateBTreeIntersectAndDiff();
         $this->validateListIntersectAndDiff();
+
+        $this->validateRequestHandler();
+    }
+
+    public function validateRequestHandler()
+    {
+        $rh = new RequestHandler();
+        $rh->addField('name', StringType::class);
+        $rh->addField('birthday', DatetimeType::class);
+        $rh->generate();
+
+        $item = $rh->newInstance();
+        $item->set('name', 'yanroussel');
+        $item->set('birthday', new \DateTime('1976-12-21'));
+        $rh->save($item);
+
+        $item = $rh->newInstance();
+        $item->set('name', 'dtan');
+        $item->set('birthday', new \DateTime('1974-04-17'));
+        $rh->save($item);
+
+        $item = $rh->newInstance();
+        $item->set('name', 'abc');
+        $item->set('birthday', new \DateTime('1978-04-17'));
+        $rh->save($item);
+
+        $request_a = $rh->getRequest('name',array('lt' => 'p'));
+        $request_b = $rh->getRequest('birthday', array('lt' => new \DateTime('1977-01-01')));
+        $request_c = RequestIndexer::intersect($request_a, $request_b);
+
+        $request_c->get(0,$index);
+        $this->assertEquals($index->getValue(), 'dtan');
     }
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)

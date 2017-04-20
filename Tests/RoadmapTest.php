@@ -84,6 +84,23 @@ class RoadmapTest extends KernelTestCase
 
         $request_c->get(0,$index);
         $this->assertEquals($index->getValue(), 'dtan');
+
+        /**
+         * database storage
+         */
+
+        $string = $rh->convertToDatabaseValue();
+
+        $rrh = HydratorIndexer::hydrate($string);
+        unset($rh);
+
+        $request_a = $rrh->getRequest('name',array('lt' => 'p'));
+        $request_b = $rrh->getRequest('birthday', array('lt' => new \DateTime('1977-01-01')));
+        $request_c = RequestIndexer::intersect($request_a, $request_b);
+
+        $request_c->get(0,$index);
+        $this->assertEquals($index->getValue(), 'dtan');
+
     }
 
     public function validateIndexer($classname, $indexes, $noindexes, $type=BTreeIndexer::class)

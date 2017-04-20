@@ -335,6 +335,17 @@ class RequestIndexer
     }
 
     /**
+     * convert current instance to database value
+     *
+     * @param bool $main
+     * @return string
+     */
+    public function convertToDatabaseValue()
+    {
+        return $this->indexer->convertToDatabaseValue();
+    }
+
+    /**
      * Make an intersection between datas from a and b with preservation of indexes from a
      *
      * @return AbstractIndexerInterface
@@ -355,7 +366,7 @@ class RequestIndexer
         for($i=0;( $i<$a->card() ) && ( null !== ( $data = $a->get($i,$index) ) );$i++)
             if(in_array($data, $datas))
                 Invoker::attach($output, $index->getValue(), $data->getValue());
-                
+
         return Invoker::getRequest($output,array());
     }
 }

@@ -16,6 +16,18 @@ class RequestInstanceHandler
         return $this->values;
     }
 
+    public function convertToDatabaseValue($json_encode = true)
+    {
+        $output = array();
+        foreach($this->classnames as $field => $classname)
+        {
+            $output[] = array('f' => $field, 'c' => $classname);
+        }
+        if(true === $json_encode)
+            return json_encode($output);
+        return $output;
+    }
+
     public function set($field, $value)
     {
         if(in_array($field, array_keys($this->classnames)))
